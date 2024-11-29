@@ -1,3 +1,3 @@
 # SA4E
 
-Repo für die Übungen in Softwarearchitektur for Enterprise Software
+Repo für die Übungen in Softwarearchitektur for Enterprise
