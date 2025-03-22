@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -31,7 +32,9 @@ public class Main {
 
         try {
             // Einlesen der Konfiguration der Strecke
-            TrackConfigWrapper wrapper = mapper.readValue(new File(jsonFilePath), TrackConfigWrapper.class);
+            InputStream jsonStream = Main.class.getClassLoader().getResourceAsStream("tracks.json");
+            TrackConfigWrapper wrapper = mapper.readValue(jsonStream, TrackConfigWrapper.class);
+
             List<Track> tracks = wrapper.tracks;
             List<String> allVehicleIds = new ArrayList<>();
 
