@@ -10,14 +10,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 /**
  * SegmentService Klasse für die Verarbeitung von Tokens in einem Segment.
  */
 public class SegmentService implements Runnable {
-    private static final Logger logger = Logger.getLogger(SegmentService.class.getName());
-
     // Tracking der gültigen Tokens pro Streitwagen
     private static final Map<String, String> validTokenIds = new ConcurrentHashMap<>();
     private static final Set<String> finishedVehicles = ConcurrentHashMap.newKeySet();
@@ -64,15 +61,11 @@ public class SegmentService implements Runnable {
     // Logik für die Verarbeitung von Tokens. Abfragen via poll und anschließendes Verarbeiten
     @Override
     public void run() {
-        System.out.println("Segment " + segmentId + " started.");
+        System.out.println("Segment " + segmentId + " gestartet.");
         while (true) {
-            try {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-                for (ConsumerRecord<String, String> record : records) {
-                    processToken(record.value());
-                }
-            } catch (Exception e) {
-                logger.warning("Fehler beim Polling in Segment " + segmentId + ": " + e.getMessage());
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+            for (ConsumerRecord<String, String> record : records) {
+                processToken(record.value());
             }
         }
     }
@@ -83,21 +76,20 @@ public class SegmentService implements Runnable {
     private void processToken(String tokenJson) {
         try {
             RaceToken token = mapper.readValue(tokenJson, RaceToken.class);
-
             if (!isValidToken(token)) return; // veralteter Token
 
             // Wenn es sich um ein Start-Ziel-Segment handelt, wird der Rundenzähler erhöht
             if ("start-goal".equals(type)) {
                 token.lapCount++;
-                System.out.println(token.vehicleId + " erreicht " + segmentId + ", Runde: " + token.lapCount);
+                System.out.println("Streitwagen " + token.vehicleId + " erreicht " + segmentId + ", Runde: " + token.lapCount);
 
                 // Wenn die maximale Rundenzahl erreicht ist, wird das Rennen beendet
                 if (token.lapCount >= token.maxLaps) {
                     long elapsed = System.currentTimeMillis() - token.startTime;
-                    System.out.println(token.vehicleId + " hat das Rennen beendet in " + elapsed + " ms");
-                    finishedVehicles.add(token.vehicleId);
+                    System.out.println("Streitwagen " + token.vehicleId + " hat das Rennen beendet in " + elapsed + " ms");
 
                     // Prüfen, ob alle Streitwagen im Ziel sind
+                    finishedVehicles.add(token.vehicleId);
                     synchronized (raceLock) {
                         if (finishedVehicles.containsAll(expectedVehicles)) {
                             System.out.println("Alle Streitwagen sind im Ziel. Rennen beendet.");
@@ -117,7 +109,7 @@ public class SegmentService implements Runnable {
             }
 
         } catch (Exception e) {
-            logger.warning("Fehler beim Verarbeiten von Token im Segment " + segmentId + ": " + e.getMessage());
+            System.err.println("Fehler im Segment " + segmentId + ": " + e.getMessage());
         }
     }
 }

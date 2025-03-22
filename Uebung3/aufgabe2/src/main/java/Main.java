@@ -1,6 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +14,8 @@ public class Main {
     private static final Logger logger = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
-        // Zunächst wird der Kafka-Broker und der Pfad zur JSON-Datei festgelegt
-        String brokers = "localhost:9092";
+        // Hier werden nun die Broker für die drei Kafka-Instanzen festgelegt
+        String brokers = "localhost:29092,localhost:29093,localhost:29094";
         KafkaProducerService producer = new KafkaProducerService(brokers);
         ObjectMapper mapper = new ObjectMapper();
         Scanner scanner = new Scanner(System.in);
@@ -33,11 +32,17 @@ public class Main {
             // Einlesen der Konfiguration der Strecke
             InputStream jsonStream = Main.class.getClassLoader().getResourceAsStream("tracks.json");
             TrackConfigWrapper wrapper = mapper.readValue(jsonStream, TrackConfigWrapper.class);
-
             List<Track> tracks = wrapper.tracks;
             List<String> allVehicleIds = new ArrayList<>();
 
-            // Segmente starten
+            for (Track track : tracks) {
+                for (SegmentConfig segConfig : track.segments) {
+                    // Anlegen des Topics, falls es noch nicht existiert
+                    producer.createTopicIfNotExists(segConfig.segmentId);
+                }
+            }
+
+            // Starte alle Segmente (Threads)
             for (Track track : tracks) {
                 for (SegmentConfig segConfig : track.segments) {
                     SegmentService segmentService = new SegmentService(
@@ -71,7 +76,6 @@ public class Main {
                     }
                 }
             }
-
             // Liste aller erwarteten Streitwagen für Zielprüfung
             SegmentService.setExpectedVehicles(allVehicleIds);
 
