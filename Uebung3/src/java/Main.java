@@ -24,12 +24,13 @@ public class Main {
         // Abfrage der Anzahl der Runden und Start des Rennens
         System.out.print("Enter number of laps: ");
         int maxLaps = scanner.nextInt();
-        scanner.nextLine(); // Eingabepuffer leeren
+        scanner.nextLine();
 
         System.out.println("Press ENTER to start the race...");
         scanner.nextLine();
 
         try {
+            // Einlesen der Konfiguration der Strecke
             TrackConfigWrapper wrapper = mapper.readValue(new File(jsonFilePath), TrackConfigWrapper.class);
             List<Track> tracks = wrapper.tracks;
             List<String> allVehicleIds = new ArrayList<>();
@@ -44,6 +45,7 @@ public class Main {
                             brokers,
                             producer
                     );
+                    // Starten des Threads für das Segment
                     new Thread(segmentService).start();
                 }
             }
