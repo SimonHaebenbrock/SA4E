@@ -5,14 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 /**
  * Main Klasse für die Initialisierung des Rennens und Start der Logik.
  */
 public class Main {
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
-
     public static void main(String[] args) {
         // Hier werden nun die Broker für die drei Kafka-Instanzen festgelegt
         String brokers = "localhost:29092,localhost:29093,localhost:29094";
@@ -80,7 +77,7 @@ public class Main {
             SegmentService.setExpectedVehicles(allVehicleIds);
 
         } catch (Exception e) {
-            logger.severe("Fehler beim Starten des Rennens: " + e.getMessage());
+            System.err.println("Fehler beim Starten des Rennens: " + e.getMessage());
         }
     }
 }

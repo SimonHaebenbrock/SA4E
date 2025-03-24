@@ -6,7 +6,7 @@ public class RaceToken {
     public long startTime;
     public int lapCount;
     public int maxLaps;
-    public String vehicleId;  // z. B. "Streitwagen 1"
+    public String vehicleId;
 
     public RaceToken() {}
 
